@@ -44,20 +44,20 @@ export function AppShell({
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex min-h-screen bg-[#0b1326] text-[#f8fafc]">
       <Sidebar open={open} onClose={() => setOpen(false)} dark={dark} toggleDark={toggleDark} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 px-4 py-3 backdrop-blur lg:px-6">
+      <div className="app-main flex min-h-screen min-w-0 flex-1 flex-col lg:pl-[260px]">
+        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-[#1e293b] bg-[#0b1326]/95 px-3 py-3 backdrop-blur sm:px-4 lg:px-6">
           <button
-            className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-900 lg:hidden"
+            className="rounded-lg p-2 text-[#f8fafc] hover:bg-white/5 lg:hidden"
             onClick={() => setOpen(true)}
             aria-label="Open menu"
           >
             <Menu size={20} />
           </button>
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h1>
+          <h1 className="truncate text-base font-semibold sm:text-lg">{title}</h1>
         </header>
-        <main className="flex-1 p-4 lg:p-6">{children}</main>
+        <main className="min-w-0 flex-1 p-3 sm:p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );

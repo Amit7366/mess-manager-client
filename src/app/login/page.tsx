@@ -2,17 +2,58 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
+import { Eye, EyeOff, Lock, Mail, ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { getErrorMessage } from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
+
+const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['600', '700'] });
+const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600'] });
+
+const highlights = [
+  {
+    title: 'Automated Meal Rate Engine',
+    detail: 'Expenses ÷ total meals',
+  },
+  {
+    title: 'Real-time Balance Ledger',
+    detail: 'Deposits, cost, refund or due',
+  },
+  {
+    title: 'Transparent Meal Audits',
+    detail: 'Day-by-day breakfast, lunch, dinner',
+  },
+];
+
+const roles = {
+  admin: {
+    label: 'Mess Admin',
+    email: 'admin@mess.com',
+    password: 'password123',
+    pill: 'Demo Admin: admin@mess.com',
+  },
+  member: {
+    label: 'Hostel Member',
+    email: 'rahim@mess.com',
+    password: 'password123',
+    pill: 'Demo Member: rahim@mess.com',
+  },
+} as const;
+
+type RoleKey = keyof typeof roles;
 
 export default function LoginPage() {
   const router = useRouter();
   const { login, loading, hydrate, token, hydrated } = useAuthStore();
-  const [email, setEmail] = useState('admin@mess.com');
-  const [password, setPassword] = useState('password123');
+  const [role, setRole] = useState<RoleKey>('admin');
+  const [email, setEmail] = useState(roles.admin.email);
+  const [password, setPassword] = useState(roles.admin.password);
+  const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(true);
+  const [emailTouched, setEmailTouched] = useState(false);
+
+  const emailInvalid = emailTouched && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   useEffect(() => {
     hydrate();
@@ -22,11 +63,22 @@ export default function LoginPage() {
     if (hydrated && token) router.replace('/dashboard');
   }, [hydrated, token, router]);
 
+  const applyRole = (next: RoleKey) => {
+    setRole(next);
+    setEmail(roles[next].email);
+    setPassword(roles[next].password);
+    setEmailTouched(false);
+  };
+
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setEmailTouched(true);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
     try {
+      if (remember) localStorage.setItem('rememberDevice', '1');
+      else localStorage.removeItem('rememberDevice');
       await login(email, password);
-      toast.success('Welcome back!');
+      toast.success('Welcome back');
       router.replace('/dashboard');
     } catch (error) {
       toast.error(getErrorMessage(error, 'Login failed'));
@@ -34,55 +86,150 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-900/40 via-slate-950 to-slate-950" />
-      <div className="absolute -left-20 top-20 h-72 w-72 rounded-full bg-teal-500/20 blur-3xl" />
-      <div className="absolute -right-16 bottom-10 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl" />
+    <div className={`${inter.className} relative min-h-screen overflow-hidden bg-[#020617] text-[#F8FAFC]`}>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(79,70,229,0.35),transparent_45%),radial-gradient(ellipse_at_bottom_right,rgba(16,185,129,0.12),transparent_40%)]" />
+      <div className="pointer-events-none absolute left-1/3 top-16 h-72 w-72 rounded-full bg-[#4F46E5]/20 blur-3xl" />
 
-      <div className="relative mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-10">
-        <div className="mb-8 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-400">Mess Manager</p>
-          <h1 className="mt-2 text-3xl font-bold text-white">Sign in to your mess</h1>
-          <p className="mt-2 text-sm text-slate-400">
-            Track meals, expenses, deposits, and monthly balances.
+      <div className="relative mx-auto grid min-h-screen max-w-[1280px] items-center gap-10 px-4 py-10 lg:grid-cols-2 lg:px-10">
+        <section className="max-w-xl">
+          <div className="mb-8 flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#4F46E5] text-sm font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
+              MM
+            </span>
+            <div>
+              <p className={`${jakarta.className} text-lg font-semibold tracking-tight`}>MessMate</p>
+              <p className="text-xs text-[#94A3B8]">Hostel 7 Dining Portal</p>
+            </div>
+          </div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#C3C0FF]">Welcome to MessMate</p>
+          <h1 className={`${jakarta.className} mt-3 text-4xl font-bold leading-[44px] tracking-tight sm:text-[36px]`}>
+            Hostel 7 Dining Portal
+          </h1>
+          <p className="mt-4 max-w-md text-base leading-7 text-[#C7C4D8]">
+            Sign in to the shared meal ledger. Meal rate, deposits, and monthly settlement stay visible to the right role.
           </p>
-        </div>
-
-        <form
-          onSubmit={onSubmit}
-          className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur"
-        >
-          <Input
-            id="email"
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="!bg-slate-900/70 !border-slate-700 !text-white"
-          />
-          <Input
-            id="password"
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="!bg-slate-900/70 !border-slate-700 !text-white"
-          />
-          <Button type="submit" className="w-full" loading={loading}>
-            Login
-          </Button>
-        </form>
-
-        <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4 text-xs text-slate-400">
-          <p className="font-medium text-slate-300">Demo accounts (password: password123)</p>
-          <ul className="mt-2 space-y-1">
-            <li>superadmin@mess.com — Super Admin</li>
-            <li>admin@mess.com — Admin</li>
-            <li>rahim@mess.com — Member</li>
+          <ul className="mt-8 space-y-3">
+            {highlights.map((item) => (
+              <li
+                key={item.title}
+                className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-md"
+              >
+                <p className="text-sm font-semibold">{item.title}</p>
+                <p className="mt-0.5 text-xs text-[#94A3B8]">{item.detail}</p>
+              </li>
+            ))}
           </ul>
-        </div>
+        </section>
+
+        <section className="rounded-3xl border border-white/10 bg-[#0F172A]/75 p-6 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.55)] backdrop-blur-xl sm:p-8">
+          <div className="grid grid-cols-2 rounded-lg border border-[#334155] bg-[#020617] p-1">
+            {(Object.keys(roles) as RoleKey[]).map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => applyRole(key)}
+                className={`rounded-md px-3 py-2 text-sm font-semibold transition ${
+                  role === key
+                    ? 'bg-[#4F46E5] text-white shadow-[0_0_18px_rgba(79,70,229,0.45)]'
+                    : 'text-[#94A3B8] hover:text-white'
+                }`}
+              >
+                {roles[key].label}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {(Object.keys(roles) as RoleKey[]).map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => applyRole(key)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
+                  role === key
+                    ? 'border-[#4F46E5] bg-[#4F46E5]/15 text-[#C3C0FF]'
+                    : 'border-[#334155] text-[#94A3B8] hover:border-[#64748B]'
+                }`}
+              >
+                {roles[key].pill}
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={onSubmit} className="mt-6 space-y-4">
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">Email</span>
+              <span
+                className={`flex h-11 items-center gap-2 rounded-md border bg-[#020617] px-3 ${
+                  emailInvalid ? 'border-[#EF4444]' : 'border-[#334155] focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-[#4F46E5]/35'
+                }`}
+              >
+                <Mail size={16} className="text-[#94A3B8]" />
+                <input
+                  type="email"
+                  value={email}
+                  autoComplete="email"
+                  onBlur={() => setEmailTouched(true)}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-full w-full bg-transparent text-sm outline-none placeholder:text-[#64748B]"
+                  placeholder="you@mess.com"
+                  required
+                />
+              </span>
+              {emailInvalid && <span className="mt-1 block text-xs text-[#EF4444]">Enter a valid email</span>}
+            </label>
+
+            <label className="block">
+              <span className="mb-1.5 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-[#94A3B8]">
+                Password
+                <button
+                  type="button"
+                  className="normal-case tracking-normal text-[#C3C0FF]"
+                  onClick={() => toast('Ask your mess admin to reset this password.')}
+                >
+                  Forgot password?
+                </button>
+              </span>
+              <span className="flex h-11 items-center gap-2 rounded-md border border-[#334155] bg-[#020617] px-3 focus-within:border-[#4F46E5] focus-within:ring-2 focus-within:ring-[#4F46E5]/35">
+                <Lock size={16} className="text-[#94A3B8]" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  autoComplete="current-password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="h-full w-full bg-transparent text-sm outline-none"
+                  required
+                />
+                <button type="button" onClick={() => setShowPassword((v) => !v)} className="text-[#94A3B8]" aria-label="Toggle password">
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </span>
+            </label>
+
+            <label className="flex items-center gap-2 text-sm text-[#C7C4D8]">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                className="h-4 w-4 rounded border-[#475569] bg-transparent accent-[#4F46E5]"
+              />
+              Remember this device for 30 days
+            </label>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="h-11 w-full rounded-md bg-gradient-to-r from-[#4F46E5] to-[#6366F1] text-sm font-semibold text-white shadow-[0_0_24px_rgba(79,70,229,0.45),inset_0_1px_0_rgba(255,255,255,0.18)] transition hover:brightness-110 disabled:opacity-60"
+            >
+              {loading ? 'Signing in…' : 'Sign in'}
+            </button>
+          </form>
+
+          <div className="mt-6 flex items-start gap-2 border-t border-[#1E293B] pt-4 text-[11px] leading-4 text-[#94A3B8]">
+            <ShieldCheck size={14} className="mt-0.5 shrink-0 text-[#4EDEA3]" />
+            <p>256-bit Encrypted Ledger · Role-based Middleware Guard · Audit Logged</p>
+          </div>
+        </section>
       </div>
     </div>
   );

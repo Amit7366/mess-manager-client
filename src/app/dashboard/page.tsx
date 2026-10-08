@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { AppShell } from '@/components/layout/AppShell';
+import { AdminCommandCenter, type AdminDashboardData } from '@/components/dashboard/AdminCommandCenter';
 import { Button } from '@/components/ui/Button';
 import { Card, StatCard } from '@/components/ui/Card';
+import { ConfirmDialog } from '@/components/ui/Modal';
 import { LoadingState } from '@/components/ui/EmptyState';
-import { ExpenseChart } from '@/components/reports/ExpenseChart';
 import { api, getErrorMessage } from '@/lib/api';
 import { formatCurrency } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
@@ -16,20 +17,42 @@ export default function DashboardPage() {
   const { user } = useAuthStore();
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
+  const [locking, setLocking] = useState(false);
+  const [confirmLock, setConfirmLock] = useState(false);
+
+  const load = async () => {
+    try {
+      const res = await api.get('/dashboard');
+      setData(res.data.data);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await api.get('/dashboard');
-        setData(res.data.data);
-      } catch (error) {
-        toast.error(getErrorMessage(error));
-      } finally {
-        setLoading(false);
-      }
-    };
     load();
   }, []);
+
+  const toggleLock = async () => {
+    if (!data) return;
+    setLocking(true);
+    try {
+      await api.patch('/month-settings', {
+        month: data.month,
+        year: data.year,
+        isLocked: !data.isLocked,
+      });
+      toast.success(data.isLocked ? 'Month unlocked' : 'Month locked');
+      setConfirmLock(false);
+      await load();
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setLocking(false);
+    }
+  };
 
   return (
     <AppShell title="Dashboard">
@@ -71,57 +94,26 @@ export default function DashboardPage() {
           </Card>
         </div>
       ) : (
-        <div className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard label="Total expense" value={formatCurrency(Number(data.totalExpense))} tone="accent" />
-            <StatCard label="Total meals" value={String(data.totalMeals)} />
-            <StatCard label="Meal rate" value={formatCurrency(Number(data.mealRate))} />
-            <StatCard label="Members" value={String(data.memberCount)} />
-          </div>
-
-          <div className="grid gap-4 xl:grid-cols-2">
-            <Card title="Expense by category">
-              <ExpenseChart data={(data.expenseChart as { category: string; amount: number }[]) || []} />
-            </Card>
-            <Card title="Member balances">
-              <div className="space-y-2">
-                {((data.memberBalances as { name: string; balance: number; totalMeals: number }[]) || []).map(
-                  (m) => (
-                    <div
-                      key={m.name}
-                      className="flex items-center justify-between rounded-lg border border-slate-100 dark:border-slate-800 px-3 py-2 text-sm"
-                    >
-                      <div>
-                        <p className="font-medium">{m.name}</p>
-                        <p className="text-xs text-slate-500">{m.totalMeals} meals</p>
-                      </div>
-                      <span className={m.balance >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
-                        {formatCurrency(m.balance)}
-                      </span>
-                    </div>
-                  )
-                )}
-              </div>
-            </Card>
-          </div>
-
-          <Card title="Recent activity">
-            <div className="space-y-2">
-              {((data.recentActivity as { id: string; action: string; entity: string; createdAt: string; user?: { name?: string } }[]) || []).map(
-                (a) => (
-                  <div key={a.id} className="flex justify-between text-sm border-b border-slate-100 dark:border-slate-800 py-2 last:border-0">
-                    <span>
-                      <span className="font-medium">{a.user?.name || 'User'}</span> {a.action.toLowerCase()} {a.entity}
-                    </span>
-                    <span className="text-xs text-slate-500">
-                      {new Date(a.createdAt).toLocaleString()}
-                    </span>
-                  </div>
-                )
-              )}
-            </div>
-          </Card>
-        </div>
+        <>
+          <AdminCommandCenter
+            data={data as unknown as AdminDashboardData}
+            locking={locking}
+            onToggleLock={() => setConfirmLock(true)}
+          />
+          <ConfirmDialog
+            open={confirmLock}
+            onClose={() => setConfirmLock(false)}
+            onConfirm={toggleLock}
+            loading={locking}
+            confirmLabel={data.isLocked ? 'Unlock' : 'Lock month'}
+            title={data.isLocked ? 'Unlock month' : 'Lock month'}
+            message={
+              data.isLocked
+                ? 'Unlocking lets admins and members edit meals, expenses, and deposits again.'
+                : 'Locking freezes meals, expenses, and deposits for this month.'
+            }
+          />
+        </>
       )}
     </AppShell>
   );

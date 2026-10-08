@@ -32,8 +32,10 @@ body {
     display: none !important;
   }
 
-  main {
+  main,
+  .app-main {
     padding: 0 !important;
+    padding-left: 0 !important;
   }
 
   body {
