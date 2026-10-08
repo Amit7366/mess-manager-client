@@ -27,18 +27,8 @@ const highlights = [
 ];
 
 const roles = {
-  admin: {
-    label: 'Mess Admin',
-    email: 'admin@mess.com',
-    password: 'password123',
-    pill: 'Demo Admin: admin@mess.com',
-  },
-  member: {
-    label: 'Hostel Member',
-    email: 'rahim@mess.com',
-    password: 'password123',
-    pill: 'Demo Member: rahim@mess.com',
-  },
+  admin: { label: 'Mess Admin' },
+  member: { label: 'Hostel Member' },
 } as const;
 
 type RoleKey = keyof typeof roles;
@@ -47,8 +37,8 @@ export default function LoginPage() {
   const router = useRouter();
   const { login, loading, hydrate, token, hydrated } = useAuthStore();
   const [role, setRole] = useState<RoleKey>('admin');
-  const [email, setEmail] = useState(roles.admin.email);
-  const [password, setPassword] = useState(roles.admin.password);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
   const [emailTouched, setEmailTouched] = useState(false);
@@ -65,9 +55,6 @@ export default function LoginPage() {
 
   const applyRole = (next: RoleKey) => {
     setRole(next);
-    setEmail(roles[next].email);
-    setPassword(roles[next].password);
-    setEmailTouched(false);
   };
 
   const onSubmit = async (e: FormEvent) => {
@@ -135,23 +122,6 @@ export default function LoginPage() {
                 }`}
               >
                 {roles[key].label}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            {(Object.keys(roles) as RoleKey[]).map((key) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => applyRole(key)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
-                  role === key
-                    ? 'border-[#4F46E5] bg-[#4F46E5]/15 text-[#C3C0FF]'
-                    : 'border-[#334155] text-[#94A3B8] hover:border-[#64748B]'
-                }`}
-              >
-                {roles[key].pill}
               </button>
             ))}
           </div>
