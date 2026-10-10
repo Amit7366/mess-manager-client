@@ -129,8 +129,8 @@ export function AdminCommandCenter({
   };
 
   return (
-    <div className={`${jakarta.className} text-[#f8fafc]`}>
-      <div className="mx-auto max-w-[1440px]">
+    <div className={`${jakarta.className} min-w-0 text-[#f8fafc]`}>
+      <div className="mx-auto min-w-0 max-w-[1440px]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -139,7 +139,7 @@ export function AdminCommandCenter({
                 Meal rate {formatCurrency(data.mealRate)}
               </span>
             </div>
-            <h2 className="mt-1 text-xl font-bold tracking-tight sm:text-2xl lg:text-[28px]">
+            <h2 className="mt-1 break-words text-xl font-bold tracking-tight sm:text-2xl lg:text-[28px]">
               Admin Command Center — {monthLabel(data.month, data.year)}
             </h2>
             <p className="mt-1 text-xs text-[#64748b]">{data.messName}</p>
@@ -171,7 +171,7 @@ export function AdminCommandCenter({
           </div>
         </div>
 
-        <section className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="mt-5 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <Card>
             <Label>Total mess expenses</Label>
             <div className="mt-1 flex items-start justify-between gap-2">
@@ -229,11 +229,11 @@ export function AdminCommandCenter({
           </Card>
         </section>
 
-        <section className="mt-4 grid gap-4 xl:grid-cols-12">
-          <div className="space-y-4 xl:col-span-7">
+        <section className="mt-4 grid min-w-0 gap-4 xl:grid-cols-12">
+          <div className="min-w-0 space-y-4 xl:col-span-7">
             <Card>
-              <div className="flex items-start justify-between gap-3">
-                <div>
+              <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                   <h2 className="text-lg font-semibold">Mess expense categorization</h2>
                   <p className="text-xs text-[#64748b]">Disbursement allocation across staple supplies and operating costs</p>
                 </div>
@@ -291,8 +291,28 @@ export function AdminCommandCenter({
                   ))}
                 </div>
               </div>
-              <div className="mt-4 overflow-x-auto">
-                <table className="w-full text-left text-sm">
+              <ul className="mt-4 space-y-3 sm:hidden">
+                {expenses.map((expense) => (
+                  <li key={expense.id} className="rounded-xl border border-white/5 bg-[#0d1527] p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <span className="rounded-md bg-[#1e293b] px-1.5 py-0.5 text-[10px] font-semibold text-[#c4b5fd]">
+                          {expense.category}
+                        </span>
+                        <p className="mt-1 break-words font-medium">{expense.title}</p>
+                        {expense.note && <p className="mt-0.5 text-xs text-[#64748b]">{expense.note}</p>}
+                      </div>
+                      <p className="shrink-0 font-semibold tabular-nums">{formatCurrency(expense.amount)}</p>
+                    </div>
+                    <p className="mt-2 text-xs text-[#94a3b8]">
+                      {expense.createdBy?.name || 'Admin'} · {formatDate(expense.date)}
+                    </p>
+                  </li>
+                ))}
+                {expenses.length === 0 && <li className="text-sm text-[#64748b]">No expenses for this filter.</li>}
+              </ul>
+              <div className="mt-4 hidden overflow-x-auto sm:block">
+                <table className="w-full min-w-[640px] text-left text-sm">
                   <thead className="text-[11px] uppercase tracking-wide text-[#64748b]">
                     <tr>
                       <th className="pb-2">Category & note</th>
@@ -332,14 +352,14 @@ export function AdminCommandCenter({
                   </tbody>
                 </table>
               </div>
-              <div className="mt-2 flex justify-between text-xs text-[#64748b]">
+              <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs text-[#64748b]">
                 <span>Showing {expenses.length} of {data.expenseCount}</span>
                 <Link href="/expenses" className="text-[#c4b5fd]">View all audit logs →</Link>
               </div>
             </Card>
           </div>
 
-          <div className="space-y-4 xl:col-span-5">
+          <div className="min-w-0 space-y-4 xl:col-span-5">
             <div className={`rounded-2xl border p-4 ${data.dueCount > 0 ? 'border-rose-500/40 bg-rose-950/40' : 'border-emerald-500/30 bg-emerald-950/30'}`}>
               <h2 className="text-base font-semibold">
                 {data.dueCount > 0 ? `Deficit warning: ${data.dueCount} member deficit${data.dueCount === 1 ? '' : 's'}` : 'All member balances are covered'}
@@ -364,14 +384,32 @@ export function AdminCommandCenter({
             </div>
 
             <Card>
-              <div className="flex items-start justify-between">
-                <div>
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                   <h2 className="text-lg font-semibold">Member ledger matrix</h2>
                   <p className="text-xs text-[#64748b]">Live breakdown per boarder</p>
                 </div>
                 <span className="text-xs font-semibold text-emerald-300">Rate {formatCurrency(data.mealRate)}</span>
               </div>
-              <div className="mt-3 overflow-x-auto">
+              <ul className="mt-3 space-y-3 sm:hidden">
+                {data.memberBalances.slice(0, 6).map((member) => (
+                  <li key={member.userId} className="rounded-xl border border-white/5 bg-[#0d1527] p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{member.name}</p>
+                        <p className="truncate text-[11px] text-[#64748b]">{member.email}</p>
+                      </div>
+                      <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[11px] font-semibold ${member.balance >= 0 ? 'bg-emerald-500/15 text-emerald-300' : 'bg-rose-500/15 text-rose-300'}`}>
+                        {formatCurrency(member.balance)} {member.balance >= 0 ? 'Ref' : 'Due'}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-xs text-[#94a3b8]">
+                      {member.totalMeals} meals · {formatCurrency(member.totalCost)} · deposited {formatCurrency(member.totalDeposit)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-3 hidden overflow-x-auto sm:block">
               <table className="w-full min-w-[520px] text-sm">
                 <thead className="text-[11px] uppercase tracking-wide text-[#64748b]">
                   <tr>
@@ -416,7 +454,7 @@ export function AdminCommandCenter({
                 {data.recentActivity.length === 0 && <li className="text-sm text-[#64748b]">No activity yet.</li>}
                 {data.recentActivity.slice(0, 5).map((item) => (
                   <li key={item.id} className="flex items-start justify-between gap-3 text-sm">
-                    <p>
+                    <p className="min-w-0 break-words">
                       <span className="font-medium">{item.user?.name || 'System'}</span>{' '}
                       <span className="text-[#94a3b8]">
                         {item.action.toLowerCase().replaceAll('_', ' ')} {item.entity.toLowerCase()}
@@ -435,7 +473,7 @@ export function AdminCommandCenter({
 }
 
 function Card({ children }: { children: React.ReactNode }) {
-  return <section className="rounded-2xl border border-white/5 bg-[#101628] p-4">{children}</section>;
+  return <section className="min-w-0 rounded-2xl border border-white/5 bg-[#101628] p-4">{children}</section>;
 }
 
 function Label({ children }: { children: React.ReactNode }) {
@@ -443,7 +481,7 @@ function Label({ children }: { children: React.ReactNode }) {
 }
 
 function Value({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <p className={`mt-1 break-words text-2xl font-bold leading-tight tabular-nums sm:text-[28px] ${className}`}>{children}</p>;
+  return <p className={`mt-1 break-words text-xl font-bold leading-tight tabular-nums sm:text-[28px] ${className}`}>{children}</p>;
 }
 
 function Rows({ rows, raw = false }: { rows: [string, number][]; raw?: boolean }) {
@@ -463,7 +501,7 @@ function Rows({ rows, raw = false }: { rows: [string, number][]; raw?: boolean }
 
 function Mini({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="rounded-2xl border border-white/5 bg-[#101628] p-4">
+    <div className="min-w-0 rounded-2xl border border-white/5 bg-[#101628] p-4">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-[#64748b]">{label}</p>
       <p className="mt-1 text-xl font-bold tabular-nums">{value}</p>
       <p className="mt-1 text-xs text-[#64748b]">{hint}</p>

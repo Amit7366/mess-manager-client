@@ -149,11 +149,11 @@ export function Sidebar({
       {open && <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={onClose} />}
       <aside
         className={cn(
-          'fixed top-0 left-0 z-50 flex h-screen w-[260px] max-w-[85vw] flex-col overflow-hidden border-r border-[#1e293b] bg-[#0b1326] text-[#f8fafc] transition-transform lg:translate-x-0',
+          'fixed top-0 left-0 z-50 flex h-[100vh] max-h-[100vh] w-[260px] max-w-[85vw] flex-col overflow-hidden border-r border-[#1e293b] bg-[#0b1326] text-[#f8fafc] transition-transform lg:translate-x-0',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="px-4 pb-3 pt-5">
+        <div className="shrink-0 px-4 pb-3 pt-5">
           <div className="flex items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#4f46e5] text-xs font-bold tracking-wide">
               MM
@@ -222,7 +222,7 @@ export function Sidebar({
           )}
         </nav>
 
-        <div className="border-t border-[#1e293b] p-3">
+        <div className="shrink-0 border-t border-[#1e293b] p-3">
           <div className="flex items-center gap-2.5 rounded-xl px-1 py-1">
             <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1e293b] text-xs font-semibold">
               {initials(user?.name || 'A')}
